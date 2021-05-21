@@ -4,11 +4,12 @@ Sendungsverfolgung - shipment tracking (d-get-piece, d-get-piece-events, d-get-p
 Der hier vorgestellte Code ist ein PHP Wrapper für die API aus dem DHL Entwicklerportal und dient der Sendungsverfolgung von DHL Produkten mit Sendungsnummer (Paket / Warenpost National). 
 
 Er unsterstützt alle 4 Modi für Geschäftskunden:
-                     - d-get-piece: Abfrage des aktuellen Sendungsstatus mit erweiterten Informationen
-                     - d-get-piece-events: Abfrage des Sendungsverlaufs mit allen Einzelereignissen zur einer Sendung
-                     - d-get-piece-detail: Kombinierter Aufruf von Sendungsstatus und Laufweg
-                     - d-get-signature: Abfrage der Unterschrift des Empfängers bzw. Ersatzempfängers (Zustellnachweis / POD)
-      
+
+	-d-get-piece: Abfrage des aktuellen Sendungsstatus mit erweiterten Informationen
+	-d-get-piece-events: Abfrage des Sendungsverlaufs mit allen Einzelereignissen zur einer Sendung
+	-d-get-piece-detail: Kombinierter Aufruf von Sendungsstatus und Laufweg
+	-d-get-signature: Abfrage der Unterschrift des Empfängers bzw. Ersatzempfängers (Zustellnachweis / POD)
+
 
 -------------------------------------------------------------------
 # STARTUP
