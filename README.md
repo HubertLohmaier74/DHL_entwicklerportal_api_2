@@ -10,9 +10,20 @@ Er unsterstützt alle 4 Modi für Geschäftskunden:
       * d-get-signature: Abfrage der Unterschrift des Empfängers bzw. Ersatzempfängers (Zustellnachweis / POD)
       
 
+-------------------------------------------------------------------
 # STARTUP
+-------------------------------------------------------------------
 In den Zeilen 45-51 müssen die Variablen entsprechend der persönlichen Bedürfnisse angepasst werden.
 Danach einfach die Datei über ihren Namen im Browser aufrufen.
+
+-------------------------------------------------------------------
+# Integration in ein eigenes Projekt:
+-------------------------------------------------------------------
+Im Sandbox-Betrieb müssen Sie bestimmte von DHL zu Testzwecken vorgegebene Sendungsnummern verwenden.
+Eigene Sendungsnummern sind nicht erlaubt.
+
+Im LIVE-Betrieb benötigen Sie ein Array mit NAmen $allShipmentIds.
+Wenn Sie anschließend die Funktion loadShipmentNumber("0034...........") verwenden, werden die von Ihnen hier (einzeln) übergebenen Sendungsnummern in diesem Array hinterlegt. Natürlich können Sie stattdessen auch einfach ein eigenes Nummern-Array mit diesem Namen anlegen und füllen.
 
 Falls der operation mode 'd-get-signature' verwendet wird, liefert DHL anstatt Zustelldaten die Unterschriften des Empfängers.
 Der Wrapper legt hierfür ein Unterverzeichnis an und speichert dort die Unterschriftsdateien ab.
