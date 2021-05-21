@@ -23,7 +23,9 @@ Danach einfach die Datei über ihren Namen im Browser aufrufen.
 Im Sandbox-Betrieb müssen Sie bestimmte von DHL zu Testzwecken vorgegebene Sendungsnummern verwenden.
 Eigene Sendungsnummern sind nicht erlaubt.
 
-Im LIVE-Betrieb benötigen Sie ein Array mit NAmen $allShipmentIds.
+Der Wrapper analysiert die von Ihnen übergebenen Sendungsnummern und speichert alle ermittelten Ergebnisse in der Variable $status, die in Zeile 184 mit print_r($status); ausgegeben wird. Im eigenen Projekt verzichten Sie sicher auf diese Bildschirmausgabe, die hier nur zu Demo-Zwecken hinsichtlich des Aufbaus der Ergebnisstruktur verwendet wird. Die einzelnen Ergebnisse können direkt über die Sendungsnummer $status[0034............] angesprochen werden, oder auch über eine foreach-Schleife. Zu diesem Zweck ist die Sendungnummer auch nochmals innerhalb des $status['details']  - Blocks enthalten.
+
+Im LIVE-Betrieb benötigen Sie in Ihrem Code zunächst ein leeres Array mit Namen $allShipmentIds. Sie definieren es wie folgt: $allShipmentIds = array();
 Wenn Sie anschließend die Funktion loadShipmentNumber("0034...........") verwenden, werden die von Ihnen hier (einzeln) übergebenen Sendungsnummern in diesem Array hinterlegt. Natürlich können Sie stattdessen auch einfach ein eigenes Nummern-Array mit diesem Namen anlegen und füllen.
 
 Falls der operation mode 'd-get-signature' verwendet wird, liefert DHL anstatt Zustelldaten die Unterschriften des Empfängers.
