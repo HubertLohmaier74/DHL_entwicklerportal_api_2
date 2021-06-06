@@ -44,8 +44,8 @@ function makeImageDir($dir) {
 
 $mode        	= 'sandbox'; 							// "sandbox" or "production"
 $language	 	= 'de';									// "de" or "en"
-$username    	= 'Your DHL developer account name'; 	// dhl developer account user name (not email)
-$password    	= 'Your DHL developer account pass';	// dhl developer account pass
+$username    	= 'Your dhl developer portal account user name'; 		// dhl developer portal account user name (not email)
+$password    	= 'Your dhl developer portal account pass';				// dhl developer portal account pass
 $appname     	= 'zt12345'; 							// sandbox user
 $apppass     	= 'geheim'; 							// sandbox pass
 $endpoint    	= 'https://cig.dhl.de/services/' . $mode . '/rest/sendungsverfolgung';
@@ -55,7 +55,7 @@ $subdir			= 'api_signature';						// subdirectory where you like to store signat
 // ..............................................
 // Which operation do you choose? (STATUS, DETAILS, EVENTS, SIGNATURE)
 // ..............................................
-$operation = $operationList['SIGNATURE'];				// Operation type (see list above)
+$operation = $operationList['STATUS'];				// Operation type (see list above)
 
 
 // ..............................................
@@ -99,55 +99,56 @@ $context = stream_context_create( $opts );
 $status = array();
 foreach ( $allShipmentIds as $shipmentid ) {
     $xml->attributes()->{'piece-code'} = $shipmentid;
-    $response                              = file_get_contents( $endpoint . '?' . http_build_query( array( 'xml' => $xml->saveXML() ) ), false, $context );
-	$responseXml                           = simplexml_load_string( $response );
-	switch ($operation) {
-		
-		case "d-get-piece-detail" : 	
-										foreach ( $responseXml->data->data->data as $event ) {
+    $response = @file_get_contents( $endpoint . '?' . http_build_query( array( 'xml' => $xml->saveXML() ) ), false, $context );
+	if ( $responseXml = simplexml_load_string( $response ) ) {
+		switch ($operation) {
+			
+			case "d-get-piece-detail" : 	
+											foreach ( $responseXml->data->data->data as $event ) {
+												$status[$shipmentid]['mode'] = $operation;
+												$status[$shipmentid]['shipmentid'] = $shipmentid;									// save tracking no.
+												$status[$shipmentid]['status'] = (string)$event->attributes()->{'event-short-status'};		// save last status
+												$retoure = (string)$event->attributes()->{'ruecksendung'};
+												if (strtolower($retoure) == 'false') $retoure = 0; else $retoure = 1;
+												$datetime = explode(" ", $event->attributes()->{'event-timestamp'});
+												$status[$shipmentid]['details'][] = 
+												array (	'TEXT' => (string)$event->attributes()->{'event-short-status'} , 	// save any status
+														'DATE' => $datetime[0] ,		// save any date
+														'TIME' => $datetime[1] ,		// save any time
+														'RETOURE' => $retoure
+														);
+											}
+											break;
+
+			case "d-get-piece-events":
+			case "d-get-piece" :			
 											$status[$shipmentid]['mode'] = $operation;
 											$status[$shipmentid]['shipmentid'] = $shipmentid;									// save tracking no.
-											$status[$shipmentid]['status'] = (string)$event->attributes()->{'event-short-status'};		// save last status
-											$retoure = (string)$event->attributes()->{'ruecksendung'};
+											$status[$shipmentid]['status'] = (string)$responseXml->data->attributes()->{'status'};
+											$retoure = (string)$responseXml->data->attributes()->{'ruecksendung'};
 											if (strtolower($retoure) == 'false') $retoure = 0; else $retoure = 1;
-											$datetime = explode(" ", $event->attributes()->{'event-timestamp'});
-											$status[$shipmentid]['details'][] = 
-											array (	'TEXT' => (string)$event->attributes()->{'event-short-status'} , 	// save any status
-													'DATE' => $datetime[0] ,		// save any date
-													'TIME' => $datetime[1] ,		// save any time
-													'RETOURE' => $retoure
+											$datetime = explode(" ", $responseXml->data->attributes()->{'status-timestamp'});
+											$status[$shipmentid]['details'] = 
+											array (	'TEXT' => (string)$responseXml->data->attributes()->{'short-status'} , 		// save status
+													'DATE' => $datetime[0] ,	// save date
+													'TIME' => $datetime[1] ,	// save time
+													'PIECE-ID' => (string)$responseXml->data->attributes()->{'piece-id'} ,
+													'RETOURE' =>  $retoure
+
+													);	
+											break;
+
+			case "d-get-signature" :		
+											$status[$shipmentid]['mode'] = $operation;
+											$status[$shipmentid]['shipmentid'] = $shipmentid;									// save tracking no.
+											$status[$shipmentid]['details'] = 
+											array (	'FILE' => (string)$responseXml->data->attributes()->{'image'} , 		// save status
+													'DATE' => (string)$responseXml->data->attributes()->{'event-date'} ,	// save timestamp
+													'TIME' => "n.a." // not available
 													);
-										}
-										break;
+											break;
 
-		case "d-get-piece-events":
-		case "d-get-piece" :			
-										$status[$shipmentid]['mode'] = $operation;
-										$status[$shipmentid]['shipmentid'] = $shipmentid;									// save tracking no.
-										$status[$shipmentid]['status'] = (string)$responseXml->data->attributes()->{'status'};
-										$retoure = (string)$responseXml->data->attributes()->{'ruecksendung'};
-										if (strtolower($retoure) == 'false') $retoure = 0; else $retoure = 1;
-										$datetime = explode(" ", $responseXml->data->attributes()->{'status-timestamp'});
-										$status[$shipmentid]['details'] = 
-										array (	'TEXT' => (string)$responseXml->data->attributes()->{'short-status'} , 		// save status
-												'DATE' => $datetime[0] ,	// save date
-												'TIME' => $datetime[1] ,	// save time
-												'PIECE-ID' => (string)$responseXml->data->attributes()->{'piece-id'} ,
-												'RETOURE' =>  $retoure
-
-												);	
-										break;
-
-		case "d-get-signature" :		
-										$status[$shipmentid]['mode'] = $operation;
-										$status[$shipmentid]['shipmentid'] = $shipmentid;									// save tracking no.
-										$status[$shipmentid]['details'] = 
-										array (	'FILE' => (string)$responseXml->data->attributes()->{'image'} , 		// save status
-												'DATE' => (string)$responseXml->data->attributes()->{'event-date'} ,	// save timestamp
-												'TIME' => "n.a." // not available
-												);
-										break;
-
+		}
 	}
 }
 
@@ -181,7 +182,10 @@ if ($operation == "d-get-piece-events") {
 // --------------------------------------------------------------------------------------------------
 
 echo "<br><b><u>SENDUNGEN / STATUS: </u></b><pre>";
-print_r($status);
+if ( count($status) > 0 )
+	print_r($status);
+else 
+	echo "<br>No shipmentNo given (see: loadShipmentNumber) or \$username / \$password incorrect!";
 
 
 // --------------------------------------------------------------------------------------------------
